@@ -21,26 +21,38 @@ public class SpawnController : MonoBehaviour
     public GameObject currentPlane;
     public GameObject[] cubeSlot = { null, null };
     public UnityAction<GameObject> isCubeAttachPlane;
-    public GameObject currentObjMove;
+    public GameObject isConfigObj = null;
     private void Awake()
     {
         if (instance != null && instance != this)
             Destroy(gameObject);
         else
             instance = this;
+        Application.targetFrameRate = 60;
     }
     // Start is called before the first frame update
     void Start()
     {
         mainCamera = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Camera>();
+        SetLevel(EGridType.Plane3x4);
         Init();
-        ReturnSpawnPosition();
     }
 
     // Update is called once per frame
     void Update()
     {
 
+    }
+    public void SetLevel(EGridType type)
+    {
+        currentGridType = type;
+    }
+    public void RestartLevel()
+    {
+        GameObject[] cubeTemp = GameObject.FindGameObjectsWithTag("Cube");
+        foreach (GameObject a in cubeTemp)
+            Destroy(a);
+        Init();
     }
     public void RemoveCubeSlot(GameObject obj)
     {
@@ -63,21 +75,24 @@ public class SpawnController : MonoBehaviour
     }
     public void ReturnSpawnPosition(GameObject obj = null)
     {
-        if (isCubeAttachPlane != null && obj == currentObjMove)
+        if (isCubeAttachPlane != null)
         {
             isCubeAttachPlane.Invoke(obj);
-            RemoveCubeSlot(obj);
-            isCubeAttachPlane = null;
         }
         else
         {
-            cubeSlot[0].transform.position = new Vector3(spawnPosition[0].transform.position.x, 13.8f, spawnPosition[0].transform.position.z);
-            ResizeCubeToPlane(spawnPosition[0], cubeSlot[0]);
+            if (cubeSlot[0] != null)
+            {
+                cubeSlot[0].transform.position = new Vector3(spawnPosition[0].transform.position.x, 13.8f, spawnPosition[0].transform.position.z);
+                ResizeCubeToPlane(spawnPosition[0], cubeSlot[0]);
+            }
+            if (cubeSlot[1] != null)
+            {
+                cubeSlot[1].transform.position = new Vector3(spawnPosition[1].transform.position.x, 13.8f, spawnPosition[1].transform.position.z);
+                ResizeCubeToPlane(spawnPosition[1], cubeSlot[1]);
+            }
 
-            cubeSlot[1].transform.position = new Vector3(spawnPosition[1].transform.position.x, 13.8f, spawnPosition[1].transform.position.z);
-            ResizeCubeToPlane(spawnPosition[1], cubeSlot[1]);
         }
-        currentObjMove = null;
     }
     public void Init()
     {
@@ -86,9 +101,8 @@ public class SpawnController : MonoBehaviour
         cubeSlot[0].AddComponent<BoxCollider>().isTrigger = true;
         cubeSlot[1] = Instantiate(cubePrefs[UnityEngine.Random.Range(0, cubePrefs.Count - 1)]);
         cubeSlot[1].AddComponent<BoxCollider>().isTrigger = true;
-
-        currentGridType = EGridType.Plane3x4;
         InitPlane();
+        ReturnSpawnPosition();
     }
     public List<int> GetSurroundingIndexes(int index)
     {
@@ -152,9 +166,11 @@ public class SpawnController : MonoBehaviour
                 break;
             case EGridType.Plane4x4:
                 currentPlane = Instantiate(planes.Find(x => x.type == EGridType.Plane4x4).gameObject, this.transform);
+                Init4x4PlaneCube();
                 break;
             case EGridType.Plane4x5:
                 currentPlane = Instantiate(planes.Find(x => x.type == EGridType.Plane4x5).gameObject, this.transform);
+                Init4x5PlaneCube();
                 break;
         }
     }
@@ -173,7 +189,36 @@ public class SpawnController : MonoBehaviour
                 plane.planes[randomPlane].GetComponent<PlanePosition>().InitPlanePosition(Instantiate(cubePrefs[UnityEngine.Random.Range(0, cubePrefs.Count - 1)]));
         }
     }
+    void Init4x4PlaneCube()
+    {
+        int totalPlane = 4 * 4;
+        columns = 4;
+        rows = 4;
+        int randomCube = UnityEngine.Random.Range(0, totalPlane / 3);
 
+        PlaneInfomation plane = currentPlane.GetComponent<PlaneInfomation>();
+        for (int i = 0; i < randomCube; i++)
+        {
+            int randomPlane = UnityEngine.Random.Range(0, plane.planes.Length - 1);
+            if (!plane.planes[randomPlane].GetComponent<PlanePosition>().isHasCube)
+                plane.planes[randomPlane].GetComponent<PlanePosition>().InitPlanePosition(Instantiate(cubePrefs[UnityEngine.Random.Range(0, cubePrefs.Count - 1)]));
+        }
+    }
+    void Init4x5PlaneCube()
+    {
+        int totalPlane = 4 * 5;
+        columns = 4;
+        rows = 5;
+        int randomCube = UnityEngine.Random.Range(0, totalPlane / 3);
+
+        PlaneInfomation plane = currentPlane.GetComponent<PlaneInfomation>();
+        for (int i = 0; i < randomCube; i++)
+        {
+            int randomPlane = UnityEngine.Random.Range(0, plane.planes.Length - 1);
+            if (!plane.planes[randomPlane].GetComponent<PlanePosition>().isHasCube)
+                plane.planes[randomPlane].GetComponent<PlanePosition>().InitPlanePosition(Instantiate(cubePrefs[UnityEngine.Random.Range(0, cubePrefs.Count - 1)]));
+        }
+    }
     void ResizeCubeToPlane(GameObject plane, GameObject cube)
     {
         float planeWidth = plane.transform.localScale.x * 10;

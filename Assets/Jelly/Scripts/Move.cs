@@ -49,7 +49,6 @@ public class Move : MonoBehaviour
                 if (cubeCollider.bounds.Contains(worldPosition))
                 {
                     isDragging = true;  // Bật cờ cho phép di chuyển
-                    SpawnController.instance.currentObjMove = this.gameObject;
                     this.transform.localScale = new Vector3(0.8f, 0.8f, 0.8f);
                 }
             }

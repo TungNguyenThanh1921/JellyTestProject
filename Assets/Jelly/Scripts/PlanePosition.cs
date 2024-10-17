@@ -10,8 +10,21 @@ public class PlanePosition : MonoBehaviour
     public bool isHasCube = false;
     public GameObject currentCube = null;
     public GameObject highLightPlane;
+    UnityAction<GameObject> callback;
+    private void Start()
+    {
+        callback = (_obj) =>
+       {
+           if (!highLightPlane.activeSelf) return;
+           SpawnController.instance.isCubeAttachPlane = null;
+           InitPlanePosition(_obj);
+           SpawnController.instance.RemoveCubeSlot(_obj);
+           SpawnController.instance.CheckNearCube(indexPlane);
+       };
+    }
     public void InitPlanePosition(GameObject _obj)
     {
+
         currentCube = _obj;
         isHasCube = true;
         ApplyOnPlane();
@@ -27,22 +40,18 @@ public class PlanePosition : MonoBehaviour
     }
     private void OnTriggerEnter(Collider other)
     {
-        if (isHasCube && !other.gameObject.tag.Equals("Cube"))
+        if (isHasCube || !other.gameObject.tag.Equals("Cube") || currentCube != null)
             return;
-        Move temp = other.GetComponent<Move>();
-
         highLightPlane.gameObject.SetActive(true);
-        UnityAction<GameObject> callback = (obj) =>
-        {
-            InitPlanePosition(obj);
-            SpawnController.instance.CheckNearCube(indexPlane);
-        };
         SpawnController.instance.isCubeAttachPlane = callback;
+        SpawnController.instance.isConfigObj = other.gameObject;
     }
     private void OnTriggerExit(Collider other)
     {
+        if (isHasCube || !other.gameObject.tag.Equals("Cube") || currentCube != null)
+            return;
         highLightPlane.gameObject.SetActive(false);
-
+        SpawnController.instance.isCubeAttachPlane = null;
     }
     public void RemoveCube()
     {

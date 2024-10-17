@@ -1,11 +1,4 @@
-﻿/***********************************************************************************************************
- * RUBBER EFFECT                                                                                        *
- * Changes: if the object is stopped, the vertices will sleep, saving CPU                                  *
- * by Rodrigo Pegorari - 2010 - http://rodrigopegorari.com                                                 *
- * based on the Processing 'Chain' code example (http://www.processing.org/learning/topics/chain.html)     *
- ***********************************************************************************************************/
-
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections;
 
 namespace JellyCube
